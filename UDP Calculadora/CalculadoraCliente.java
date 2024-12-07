@@ -10,18 +10,18 @@ public class CalculadoraCliente {
             int port = 6789; // Porta do servidor
 
             while (true) {
-                System.out.println("------------------------------");
+                System.out.println("------------------------------"); // Divisão entre requisições
 
                 String num1;
                 do {
-                    System.out.print("Digite o primeiro número (ou 0 para sair): ");
+                    System.out.print("Digite o primeiro número (ou 'exit' para sair): "); // Solicita o primeiro número
                     num1 = scanner.nextLine().trim(); // Lê e remove espaços
-                    if (num1.isEmpty() || !isNumeric(num1)) {
+                    if (num1.isEmpty() || !isNumeric(num1)) { // Verifica se a entrada é válida
                         System.out.println("Entrada inválida. Por favor, insira um número válido.");
                     }
                 } while (num1.isEmpty() || !isNumeric(num1)); // Repete se a entrada estiver vazia ou não for numérica
 
-                if ("0".equals(num1)) { // Verifica se deve encerrar
+                if ("exit".equalsIgnoreCase(num1)) { // Verifica se deve encerrar
                     socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia sinal de encerramento
                     System.out.println("Encerrando o cliente.");
                     break; // Sai do loop
@@ -31,9 +31,9 @@ public class CalculadoraCliente {
 
                 String oper;
                 do {
-                    System.out.print("Digite o operador (+, -, *, /): ");
-                    oper = scanner.nextLine().trim();
-                    if (oper.isEmpty() || !isValidOperator(oper)) {
+                    System.out.print("Digite o operador (+, -, *, /): "); // Solicita o operador
+                    oper = scanner.nextLine().trim(); // Lê e remove espaços
+                    if (oper.isEmpty() || !isValidOperator(oper)) { // Verifica se a entrada é válida
                         System.out.println("Entrada inválida. Por favor, insira um operador válido.");
                     }
                 } while (oper.isEmpty() || !isValidOperator(oper)); // Repete se a entrada estiver vazia ou não for um operador válido
@@ -42,9 +42,9 @@ public class CalculadoraCliente {
 
                 String num2;
                 do {
-                    System.out.print("Digite o segundo número: ");
-                    num2 = scanner.nextLine().trim();
-                    if (num2.isEmpty() || !isNumeric(num2)) {
+                    System.out.print("Digite o segundo número: "); // Solicita o segundo número
+                    num2 = scanner.nextLine().trim(); // Lê e remove espaços
+                    if (num2.isEmpty() || !isNumeric(num2)) { // Verifica se a entrada é válida
                         System.out.println("Entrada inválida. Por favor, insira um número válido.");
                     }
                 } while (num2.isEmpty() || !isNumeric(num2)); // Repete se a entrada estiver vazia ou não for numérica
@@ -66,15 +66,14 @@ public class CalculadoraCliente {
     // Método para verificar se uma string é numérica
     private static boolean isNumeric(String str) {
         try {
-            Double.parseDouble(str);
-            return true;
+            return Double.parseDouble(str) != Double.NaN; // Tenta converter a string para double e retorna true se a conversão for bem-sucedida
         } catch (NumberFormatException e) {
-            return false;
+            return false; // Retorna false se a conversão falhar
         }
     }
 
     // Método para verificar se um operador é válido
     private static boolean isValidOperator(String oper) {
-        return oper.equals("+") || oper.equals("-") || oper.equals("*") || oper.equals("/");
+        return oper.equals("+") || oper.equals("-") || oper.equals("*") || oper.equals("/"); // Verifica se o operador é válido
     }
 }
