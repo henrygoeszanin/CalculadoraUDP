@@ -15,3 +15,11 @@ Esta é uma aplicação de calculadora cliente-servidor que utiliza sockets UDP 
 
 ```sh
 javac CalculadoraCliente.java CalculadoraServidor.java
+```
+
+4. Execute os arquivos em terminais separados
+
+```sh
+java CalcularodaCliente
+java CalculadoraServer
+```
