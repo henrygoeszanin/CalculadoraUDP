@@ -1,79 +1,58 @@
-import java.io.*;
-import java.net.*;
+import java.io.*; // Importa classes de E/S
+import java.net.*; // Importa classes de rede
 
 public class CalculadoraServidor {
     public static void main(String[] args) {
-        try (DatagramSocket serverSocket = new DatagramSocket(6789)) {
-            byte[] buffer = new byte[100];
+        try (DatagramSocket socket = new DatagramSocket(6789)) { // Cria socket na porta 6789
+            byte[] buffer = new byte[100]; // Buffer para dados
             System.out.println("Servidor aguardando requisições...");
 
             while (true) {
-                // Receber primeiro número
-                DatagramPacket firstNumberPacket = new DatagramPacket(buffer, buffer.length);
-                serverSocket.receive(firstNumberPacket);
-                String firstNumberStr = new String(firstNumberPacket.getData(), 0, firstNumberPacket.getLength()).trim();
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length); // Pacote para receber
+                socket.receive(packet); // Recebe primeiro número
+                String num1Str = new String(packet.getData(), 0, packet.getLength()).trim(); // Converte primeiro número
 
-                if ("0".equals(firstNumberStr)) {
+                if ("0".equals(num1Str)) { // Verifica sinal de encerramento
                     System.out.println("Servidor encerrando.");
-                    break;
+                    break; // Sai do loop
                 }
 
-                System.out.println("Recebido primeiro número: " + firstNumberStr);
-                double firstNumber = Double.parseDouble(firstNumberStr);
+                double num1 = Double.parseDouble(num1Str); // Converte para double
 
-                // Receber operador
-                DatagramPacket operatorPacket = new DatagramPacket(buffer, buffer.length);
-                serverSocket.receive(operatorPacket);
-                String operator = new String(operatorPacket.getData(), 0, operatorPacket.getLength()).trim();
-                System.out.println("Recebido operador: " + operator);
+                socket.receive(packet); // Recebe operador
+                String oper = new String(packet.getData(), 0, packet.getLength()).trim(); // Converte operador
 
-                // Receber segundo número
-                DatagramPacket secondNumberPacket = new DatagramPacket(buffer, buffer.length);
-                serverSocket.receive(secondNumberPacket);
-                String secondNumberStr = new String(secondNumberPacket.getData(), 0, secondNumberPacket.getLength()).trim();
-                System.out.println("Recebido segundo número: " + secondNumberStr);
-                double secondNumber = Double.parseDouble(secondNumberStr);
+                socket.receive(packet); // Recebe segundo número
+                double num2 = Double.parseDouble(new String(packet.getData(), 0, packet.getLength()).trim()); // Converte segundo número
 
-                // Realizar cálculo
-                double result;
-                boolean validOperation = true;
-                result = switch (operator) {
-                    case "+" -> firstNumber + secondNumber;
-                    case "-" -> firstNumber - secondNumber;
-                    case "*" -> firstNumber * secondNumber;
-                    case "/" -> {
-                        if (secondNumber != 0) {
-                            yield firstNumber / secondNumber;
-                        } else {
-                            System.out.println("Erro: Divisão por zero.");
-                            validOperation = false;
-                            yield 0;
-                        }
-                    }
-                    default -> {
-                        System.out.println("Operador inválido.");
-                        validOperation = false;
-                        yield 0;
-                    }
-                };
+                double result = 0; // Inicializa resultado
+                boolean valid = true; // Flag de operação válida
 
-                if (!validOperation) {
-                    continue;
+                switch (oper) { // Realiza operação
+                    case "+":
+                        result = num1 + num2; // Soma
+                        break;
+                    case "-":
+                        result = num1 - num2; // Subtração
+                        break;
+                    case "*":
+                        result = num1 * num2; // Multiplicação
+                        break;
+                    case "/":
+                        if (num2 != 0) result = num1 / num2; // Divisão
+                        else valid = false; // Divisão por zero
+                        break;
+                    default:
+                        valid = false; // Operador inválido
                 }
 
-                // Enviar resultado
-                String resultStr = Double.toString(result);
-                byte[] resultBytes = resultStr.getBytes();
-                DatagramPacket resultPacket = new DatagramPacket(resultBytes, resultBytes.length, firstNumberPacket.getAddress(), firstNumberPacket.getPort());
-                serverSocket.send(resultPacket);
-
-                System.out.println("Resultado enviado: " + resultStr);
-                System.out.println("------------------------------");
+                String resStr = valid ? String.valueOf(result) : "Erro"; // Prepara resultado
+                byte[] resBytes = resStr.getBytes(); // Converte resultado
+                DatagramPacket resPacket = new DatagramPacket(resBytes, resBytes.length, packet.getAddress(), packet.getPort()); // Pacote de resposta
+                socket.send(resPacket); // Envia resultado
             }
-        } catch (SocketException e) {
-            System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IO: " + e.getMessage());
+            System.out.println("Erro: " + e.getMessage()); // Trata erros
         }
     }
 }

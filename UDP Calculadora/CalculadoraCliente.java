@@ -1,63 +1,45 @@
-import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+import java.io.*; // Importa classes de E/S
+import java.net.*; // Importa classes de rede
+import java.util.Scanner; // Importa Scanner para leitura
 
 public class CalculadoraCliente {
     public static void main(String[] args) {
-        try (DatagramSocket clientSocket = new DatagramSocket()) {
-            Scanner scanner = new Scanner(System.in);
-
-            InetAddress serverAddress = InetAddress.getByName("localhost");
-            int serverPort = 6789;
+        try (DatagramSocket socket = new DatagramSocket()) { // Cria socket
+            Scanner scanner = new Scanner(System.in); // Inicializa Scanner
+            InetAddress address = InetAddress.getByName("localhost"); // Endereço do servidor
+            int port = 6789; // Porta do servidor
 
             while (true) {
                 System.out.println("------------------------------");
 
-                // Receber primeiro número
                 System.out.print("Digite o primeiro número (ou 0 para sair): ");
-                String firstNumber = scanner.nextLine();
+                String num1 = scanner.nextLine(); // Lê primeiro número
 
-                if ("0".equals(firstNumber)) {
-                    // Enviar sinal para o servidor encerrar
-                    byte[] exitBytes = "0".getBytes();
-                    DatagramPacket exitPacket = new DatagramPacket(exitBytes, exitBytes.length, serverAddress, serverPort);
-                    clientSocket.send(exitPacket);
+                if ("0".equals(num1)) { // Verifica se deve encerrar
+                    socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia sinal de encerramento
                     System.out.println("Encerrando o cliente.");
-                    break;
+                    break; // Sai do loop
                 }
 
-                System.out.println("Enviando primeiro número: " + firstNumber);
-                byte[] firstNumberBytes = firstNumber.getBytes();
-                DatagramPacket firstNumberPacket = new DatagramPacket(firstNumberBytes, firstNumberBytes.length, serverAddress, serverPort);
-                clientSocket.send(firstNumberPacket);
+                socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia primeiro número
 
-                // Receber operador
                 System.out.print("Digite o operador (+, -, *, /): ");
-                String operator = scanner.nextLine();
-                System.out.println("Enviando operador: " + operator);
-                byte[] operatorBytes = operator.getBytes();
-                DatagramPacket operatorPacket = new DatagramPacket(operatorBytes, operatorBytes.length, serverAddress, serverPort);
-                clientSocket.send(operatorPacket);
+                String oper = scanner.nextLine(); // Lê operador
+                socket.send(new DatagramPacket(oper.getBytes(), oper.length(), address, port)); // Envia operador
 
-                // Receber segundo número
                 System.out.print("Digite o segundo número: ");
-                String secondNumber = scanner.nextLine();
-                System.out.println("Enviando segundo número: " + secondNumber);
-                byte[] secondNumberBytes = secondNumber.getBytes();
-                DatagramPacket secondNumberPacket = new DatagramPacket(secondNumberBytes, secondNumberBytes.length, serverAddress, serverPort);
-                clientSocket.send(secondNumberPacket);
+                String num2 = scanner.nextLine(); // Lê segundo número
+                socket.send(new DatagramPacket(num2.getBytes(), num2.length(), address, port)); // Envia segundo número
 
-                // Receber resposta
-                byte[] buffer = new byte[100];
-                DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
-                clientSocket.receive(responsePacket);
+                byte[] buffer = new byte[100]; // Buffer para resposta
+                DatagramPacket response = new DatagramPacket(buffer, buffer.length); // Pacote de resposta
+                socket.receive(response); // Recebe resultado
 
-                System.out.println("Resultado: " + new String(responsePacket.getData()).trim());
+                String result = new String(response.getData(), 0, response.getLength()).trim(); // Converte resultado
+                System.out.println("Resultado: " + result); // Exibe resultado
             }
-        } catch (SocketException e) {
-            System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("IO: " + e.getMessage());
+            System.out.println("Erro: " + e.getMessage()); // Trata erros
         }
     }
 }
