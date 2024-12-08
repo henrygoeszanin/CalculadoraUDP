@@ -3,7 +3,7 @@ import java.net.*; // Importa classes de rede
 
 public class CalculadoraServidor {
     public static void main(String[] args) {
-        try (DatagramSocket s = new DatagramSocket(6789)) { // Cria socket na porta 6789
+        try (DatagramSocket s = new DatagramSocket(6790)) { // Cria socket na porta 6790
             byte[] buf = new byte[100]; // Buffer para dados
             System.out.println("Servidor aguardando requisições..."); // Mensagem inicial
 

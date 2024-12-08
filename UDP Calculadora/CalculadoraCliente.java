@@ -7,7 +7,7 @@ public class CalculadoraCliente {
         try (DatagramSocket socket = new DatagramSocket()) { // Cria socket
             Scanner scanner = new Scanner(System.in); // Inicializa Scanner
             InetAddress address = InetAddress.getByName("localhost"); // Endereço do servidor
-            int port = 6789; // Porta do servidor
+            int port = 6790; // Porta do servidor
 
             while (true) {
                 System.out.println("------------------------------"); // Divisão entre requisições
@@ -16,16 +16,16 @@ public class CalculadoraCliente {
                 do {
                     System.out.print("Digite o primeiro número (ou 'exit' para sair): "); // Solicita o primeiro número
                     num1 = scanner.nextLine().trim(); // Lê e remove espaços
+                    if ("exit".equalsIgnoreCase(num1)) { // Verifica se deve encerrar
+                        socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia sinal de encerramento
+                        System.out.println("Encerrando o cliente.");
+                        System.exit(0); // Termina o programa
+                    }
+
                     if (num1.isEmpty() || !isNumeric(num1)) { // Verifica se a entrada é válida
                         System.out.println("Entrada inválida. Por favor, insira um número válido.");
                     }
                 } while (num1.isEmpty() || !isNumeric(num1)); // Repete se a entrada estiver vazia ou não for numérica
-
-                if ("exit".equalsIgnoreCase(num1)) { // Verifica se deve encerrar
-                    socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia sinal de encerramento
-                    System.out.println("Encerrando o cliente.");
-                    break; // Sai do loop
-                }
 
                 socket.send(new DatagramPacket(num1.getBytes(), num1.length(), address, port)); // Envia primeiro número
 
